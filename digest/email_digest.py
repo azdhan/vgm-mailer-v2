@@ -41,7 +41,7 @@ def build_html(articles: list[dict]) -> str:
         f'<p style="margin:0 0 18px;color:#999;font-size:13px;">{today} &nbsp;·&nbsp; {total} articles</p>'
         '<hr style="border:none;border-top:1px solid #ddd;margin-bottom:22px;">'
         f'{sections}'
-        '<p style="font-size:11px;color:#bbb;margin-top:20px;">Scored by Claude AI &nbsp;·&nbsp; Built by Azdhan for VGM</p>'
+        '<p style="font-size:11px;color:#bbb;margin-top:20px;">Scored by Claude AI &nbsp;·&nbsp; Built by [Azdhan](https://azdhan.vercel.app) for Vaishali Gauba Media</p>'
         '</body></html>'
     )
 
