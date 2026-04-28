@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import anthropic
 
@@ -36,17 +37,21 @@ def score_article(title: str, source: str, keyword: str) -> dict:
             ],
         )
         raw = message.content[0].text.strip()
-        print(f"  Raw scoring response: {raw[:80]}")
-        return json.loads(raw)
+        print(f"  Raw scoring response: {raw[:120]}")
+        # strip markdown code fences if the model wraps its response
+        match = re.search(r'\{.*\}', raw, re.DOTALL)
+        if not match:
+            raise ValueError(f"No JSON object found in response: {raw[:120]}")
+        return json.loads(match.group())
     except json.JSONDecodeError as e:
         print(f"  JSON parse error for '{title}': {e}")
-        return {"score": 3, "reason": "Scoring unavailable"}
+        return {"score": 1, "reason": "Scoring unavailable"}
     except anthropic.APIError as e:
         print(f"  Anthropic API error for '{title}': {e}")
-        return {"score": 3, "reason": "Scoring unavailable"}
+        return {"score": 1, "reason": "Scoring unavailable"}
     except Exception as e:
         print(f"  Scoring error for '{title}': {type(e).__name__}: {e}")
-        return {"score": 3, "reason": "Scoring unavailable"}
+        return {"score": 1, "reason": "Scoring unavailable"}
 
 
 def filter_articles(articles: list[dict], threshold: int = 3) -> list[dict]:

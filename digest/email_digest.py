@@ -16,107 +16,34 @@ def build_html(articles: list[dict]) -> str:
 
     sections = ""
     for keyword, items in sorted(grouped.items()):
-        cards = ""
+        rows = ""
         for a in items:
             score = a.get("score", 3)
-            if score == 5:
-                score_color = "#2e7d32"
-                score_bg = "#f9fbe7"
-                score_border = "#c8e6c9"
-                score_sub = "#81c784"
-            elif score == 4:
-                score_color = "#388e3c"
-                score_bg = "#f9fbe7"
-                score_border = "#c8e6c9"
-                score_sub = "#81c784"
-            else:
-                score_color = "#bf360c"
-                score_bg = "#fff8f6"
-                score_border = "#ffccbc"
-                score_sub = "#ff8a65"
+            reason = a.get("reason", "")
+            source = a.get("source", "Unknown")
+            rows += (
+                f'<div style="margin-bottom:12px;">'
+                f'<a href="{a["url"]}" style="font-weight:bold;color:#111;text-decoration:none;font-size:14px;">{a["title"]}</a><br>'
+                f'<span style="font-size:12px;color:#888;">{source} &nbsp;·&nbsp; {score}/5 &nbsp;·&nbsp; {reason}</span>'
+                f'</div>'
+            )
+        sections += (
+            f'<div style="margin-bottom:22px;">'
+            f'<p style="margin:0 0 6px;font-size:11px;font-weight:bold;text-transform:uppercase;color:#999;letter-spacing:1px;">{keyword}</p>'
+            f'<hr style="border:none;border-top:1px solid #e0e0e0;margin:0 0 10px;">'
+            f'{rows}'
+            f'</div>'
+        )
 
-            cards += f"""
-            <div style="background:#ffffff;border:1px solid #ece8e1;border-radius:8px;padding:16px 18px;margin-bottom:8px;">
-              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;">
-                <div style="flex:1;">
-                  <a href="{a['url']}" style="color:#1a1a1a;text-decoration:none;font-size:14px;font-weight:700;line-height:1.5;display:block;margin-bottom:8px;">{a['title']}</a>
-                  <div style="display:flex;align-items:center;gap:8px;">
-                    <span style="font-size:12px;font-weight:700;color:#555;">{a.get('source','Unknown')}</span>
-                    <span style="color:#ddd;font-size:10px;">|</span>
-                    <span style="font-size:11px;color:#aaa;font-style:italic;">{a.get('reason','')}</span>
-                  </div>
-                </div>
-                <div style="flex-shrink:0;border:1px solid {score_border};background:{score_bg};border-radius:6px;padding:7px 11px;text-align:center;min-width:36px;">
-                  <div style="font-size:16px;font-weight:800;color:{score_color};line-height:1;">{score}</div>
-                  <div style="font-size:8px;color:{score_sub};text-transform:uppercase;letter-spacing:0.5px;">/5</div>
-                </div>
-              </div>
-            </div>"""
-
-        sections += f"""
-        <div style="margin-bottom:28px;">
-          <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
-            <span style="font-size:11px;font-weight:800;color:#1a1a1a;text-transform:uppercase;letter-spacing:1.8px;">{keyword}</span>
-            <span style="font-size:11px;color:#ccc;">{len(items)} article{"s" if len(items) != 1 else ""}</span>
-          </div>
-          <div style="height:1px;background:#e8e3dc;margin-bottom:14px;"></div>
-          {cards}
-        </div>"""
-
-    html = f"""
-    <html>
-    <body style="margin:0;padding:0;background:#f0ede8;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0ede8;padding:28px 16px;">
-        <tr><td align="center">
-          <table width="640" cellpadding="0" cellspacing="0" style="max-width:640px;width:100%;">
-
-            <!-- Header -->
-            <tr>
-              <td style="background:#ffffff;padding:28px 28px 20px;border-radius:10px 10px 0 0;border:1px solid #e8e3dc;border-bottom:none;">
-                <div style="font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#b89a6a;margin-bottom:10px;">Daily Briefing</div>
-                <table width="100%" cellpadding="0" cellspacing="0">
-                  <tr>
-                    <td style="vertical-align:bottom;">
-                      <div style="font-size:28px;font-weight:800;color:#1a1a1a;letter-spacing:-1px;line-height:1;">News Digest</div>
-                      <div style="font-size:12px;color:#bbb;margin-top:5px;letter-spacing:0.3px;">{today}</div>
-                    </td>
-                    <td align="right" style="vertical-align:bottom;">
-                      <div style="font-size:32px;font-weight:800;color:#1a1a1a;line-height:1;">{total}</div>
-                      <div style="font-size:10px;color:#bbb;text-transform:uppercase;letter-spacing:1.5px;margin-top:2px;">Articles Today</div>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-
-            <!-- Accent line -->
-            <tr><td style="background:#b89a6a;height:2px;"></td></tr>
-
-            <!-- Body -->
-            <tr>
-              <td style="background:#fafaf8;padding:28px 28px 8px;border:1px solid #e8e3dc;border-top:none;border-bottom:none;">
-                {sections}
-              </td>
-            </tr>
-
-            <!-- Footer -->
-            <tr>
-              <td style="background:#ffffff;padding:16px 28px;border-radius:0 0 10px 10px;border:1px solid #e8e3dc;border-top:1px solid #ece8e1;">
-                <table width="100%" cellpadding="0" cellspacing="0">
-                  <tr>
-                    <td style="font-size:11px;color:#ccc;">Scored by Claude AI &nbsp;·&nbsp; Articles below 3/5 filtered</td>
-                    <td align="right" style="font-size:11px;color:#aaa;">Built by <span style="color:#b89a6a;font-weight:700;">Azdhan</span> for VGM</td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-
-          </table>
-        </td></tr>
-      </table>
-    </body>
-    </html>"""
-    return html
+    return (
+        '<html><body style="font-family:Arial,sans-serif;color:#111;max-width:580px;margin:0 auto;padding:20px 16px;">'
+        f'<h2 style="margin:0 0 2px;font-size:20px;">News Digest</h2>'
+        f'<p style="margin:0 0 18px;color:#999;font-size:13px;">{today} &nbsp;·&nbsp; {total} articles</p>'
+        '<hr style="border:none;border-top:1px solid #ddd;margin-bottom:22px;">'
+        f'{sections}'
+        '<p style="font-size:11px;color:#bbb;margin-top:20px;">Scored by Claude AI &nbsp;·&nbsp; Built by Azdhan for VGM</p>'
+        '</body></html>'
+    )
 
 
 def send_digest(articles: list[dict]):
