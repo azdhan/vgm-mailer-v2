@@ -2,6 +2,7 @@ import os
 import re
 import json
 import anthropic
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
@@ -55,13 +56,16 @@ def score_article(title: str, source: str, keyword: str) -> dict:
 
 
 def filter_articles(articles: list[dict], threshold: int = 3) -> list[dict]:
-    """Score all articles and return those at or above the threshold."""
-    scored = []
-    for article in articles:
+    """Score all articles in parallel and return those at or above the threshold."""
+    def score_one(article):
         result = score_article(article["title"], article["source"], article["keyword"])
-        article["score"] = result.get("score", 3)
+        article["score"] = result.get("score", 1)
         article["reason"] = result.get("reason", "")
         print(f"  [{article['score']}/5] {article['title'][:60]}...")
-        if article["score"] >= threshold:
-            scored.append(article)
-    return scored
+        return article
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = {executor.submit(score_one, a): a for a in articles}
+        results = [f.result() for f in as_completed(futures)]
+
+    return [a for a in results if a["score"] >= threshold]
