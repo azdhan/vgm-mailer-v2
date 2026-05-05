@@ -119,14 +119,11 @@ export default function DashboardPage() {
       <ArticleTable articles={articles} loading={loading} />
 
       <div style={{ marginTop: "28px", borderTop: "1px solid #e0e0e0", paddingTop: "14px", fontSize: "11px", color: "#bbb" }}>
-        Scored by Claude AI · Vibe-coded by{" "}
+        Vibe-coded by{" "}
         <a href="https://azdhan.vercel.app" style={{ color: "#bbb", textDecoration: "none" }} target="_blank" rel="noopener noreferrer">
           Azdhan
         </a>
-        , for{" "}
-        <a href="https://vaishaliGauba.com" style={{ color: "#bbb", textDecoration: "none" }} target="_blank" rel="noopener noreferrer">
-          Vaishali Gauba Media
-        </a>
+        , for Vaishali Gauba Media
       </div>
     </div>
   );
