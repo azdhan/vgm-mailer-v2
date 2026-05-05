@@ -7,6 +7,7 @@ from keywords import KEYWORDS
 from digest.fetch import fetch_articles
 from digest.score import filter_articles
 from digest.email_digest import send_digest
+from digest.store import save_to_supabase
 
 SCORE_THRESHOLD = int(os.environ.get("SCORE_THRESHOLD", "3"))
 MAX_PER_KEYWORD = 3
@@ -66,6 +67,7 @@ def run():
         traceback.print_exc()
         sys.exit(1)
 
+    save_to_supabase(all_scored)
     save_seen(sent_urls | {a["url"] for a in all_scored})
     print(f"Saved {len(sent_urls) + len(all_scored)} total seen URLs")
 
