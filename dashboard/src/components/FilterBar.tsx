@@ -10,6 +10,17 @@ export const TIME_PERIODS = [
   { label: "180 days", days: 180 },
 ];
 
+const btnBase: React.CSSProperties = {
+  fontFamily: "Arial, sans-serif",
+  fontSize: "12px",
+  color: "#111",
+  background: "#fff",
+  border: "1px solid #ddd",
+  borderRadius: "3px",
+  padding: "5px 10px",
+  cursor: "pointer",
+};
+
 interface MultiDropdownProps {
   label: string;
   options: string[];
@@ -19,11 +30,15 @@ interface MultiDropdownProps {
 
 function MultiDropdown({ label, options, selected, onChange }: MultiDropdownProps) {
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+        setSearch("");
+      }
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
@@ -34,6 +49,10 @@ function MultiDropdown({ label, options, selected, onChange }: MultiDropdownProp
       selected.includes(val) ? selected.filter((s) => s !== val) : [...selected, val]
     );
   };
+
+  const filtered = search
+    ? options.filter((o) => o.toLowerCase().includes(search.toLowerCase()))
+    : options;
 
   const buttonLabel =
     selected.length === 0
@@ -46,22 +65,7 @@ function MultiDropdown({ label, options, selected, onChange }: MultiDropdownProp
     <div ref={ref} style={{ position: "relative", display: "inline-block" }}>
       <button
         onClick={() => setOpen((o) => !o)}
-        style={{
-          fontFamily: "Arial, sans-serif",
-          fontSize: "12px",
-          color: "#111",
-          background: "#fff",
-          border: "1px solid #ddd",
-          borderRadius: "3px",
-          padding: "5px 10px",
-          cursor: "pointer",
-          minWidth: "140px",
-          textAlign: "left",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "6px",
-        }}
+        style={{ ...btnBase, minWidth: "140px", textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "6px" }}
       >
         <span>{buttonLabel}</span>
         <span style={{ color: "#999", fontSize: "10px" }}>{open ? "▲" : "▼"}</span>
@@ -77,11 +81,30 @@ function MultiDropdown({ label, options, selected, onChange }: MultiDropdownProp
             borderRadius: "3px",
             zIndex: 100,
             minWidth: "200px",
-            maxHeight: "240px",
+            maxHeight: "280px",
             overflowY: "auto",
             boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
           }}
         >
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={`Search ${label.toLowerCase()}...`}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              display: "block",
+              width: "100%",
+              padding: "6px 10px",
+              fontFamily: "Arial, sans-serif",
+              fontSize: "12px",
+              border: "none",
+              borderBottom: "1px solid #e0e0e0",
+              outline: "none",
+              boxSizing: "border-box",
+              color: "#111",
+            }}
+          />
           {selected.length > 0 && (
             <button
               onClick={() => onChange([])}
@@ -102,7 +125,7 @@ function MultiDropdown({ label, options, selected, onChange }: MultiDropdownProp
               Clear all
             </button>
           )}
-          {options.map((opt) => (
+          {filtered.map((opt) => (
             <label
               key={opt}
               style={{
@@ -125,9 +148,9 @@ function MultiDropdown({ label, options, selected, onChange }: MultiDropdownProp
               {opt}
             </label>
           ))}
-          {options.length === 0 && (
+          {filtered.length === 0 && (
             <div style={{ padding: "8px 10px", fontSize: "12px", color: "#999" }}>
-              No options
+              No matches
             </div>
           )}
         </div>
@@ -146,6 +169,9 @@ interface FilterBarProps {
   onPublicationsChange: (v: string[]) => void;
   onTimeDaysChange: (v: number) => void;
   count: number;
+  onExportAll: () => void;
+  onExportSelected: () => void;
+  onCopy: () => void;
 }
 
 export default function FilterBar({
@@ -158,25 +184,21 @@ export default function FilterBar({
   onPublicationsChange,
   onTimeDaysChange,
   count,
+  onExportAll,
+  onExportSelected,
+  onCopy,
 }: FilterBarProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    onCopy();
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
   return (
-    <div
-      style={{
-        borderBottom: "1px solid #ddd",
-        paddingBottom: "14px",
-        marginBottom: "22px",
-      }}
-    >
-      <div
-        style={{
-          fontSize: "11px",
-          fontWeight: "bold",
-          textTransform: "uppercase",
-          letterSpacing: "1px",
-          color: "#999",
-          marginBottom: "8px",
-        }}
-      >
+    <div style={{ borderBottom: "1px solid #ddd", paddingBottom: "14px", marginBottom: "22px" }}>
+      <div style={{ fontSize: "11px", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "1px", color: "#999", marginBottom: "8px" }}>
         Filters
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
@@ -185,42 +207,32 @@ export default function FilterBar({
           <select
             value={timeDays}
             onChange={(e) => onTimeDaysChange(Number(e.target.value))}
-            style={{
-              fontFamily: "Arial, sans-serif",
-              fontSize: "12px",
-              color: "#111",
-              background: "#fff",
-              border: "1px solid #ddd",
-              borderRadius: "3px",
-              padding: "5px 8px",
-              cursor: "pointer",
-            }}
+            style={{ ...btnBase, padding: "5px 8px" }}
           >
             {TIME_PERIODS.map((p) => (
-              <option key={p.days} value={p.days}>
-                {p.label}
-              </option>
+              <option key={p.days} value={p.days}>{p.label}</option>
             ))}
           </select>
         </div>
 
-        <MultiDropdown
-          label="Keyword"
-          options={keywords}
-          selected={selectedKeywords}
-          onChange={onKeywordsChange}
-        />
-
-        <MultiDropdown
-          label="Publication"
-          options={publications}
-          selected={selectedPublications}
-          onChange={onPublicationsChange}
-        />
+        <MultiDropdown label="Keyword" options={keywords} selected={selectedKeywords} onChange={onKeywordsChange} />
+        <MultiDropdown label="Publication" options={publications} selected={selectedPublications} onChange={onPublicationsChange} />
 
         <span style={{ fontSize: "12px", color: "#bbb", marginLeft: "4px" }}>
           {count} {count === 1 ? "result" : "results"}
         </span>
+
+        <div style={{ marginLeft: "auto", display: "flex", gap: "6px", alignItems: "center" }}>
+          <button onClick={handleCopy} style={btnBase}>
+            {copied ? "Copied!" : "Copy"}
+          </button>
+          <button onClick={onExportSelected} style={btnBase}>
+            Export Selected
+          </button>
+          <button onClick={onExportAll} style={btnBase}>
+            Export All
+          </button>
+        </div>
       </div>
     </div>
   );
