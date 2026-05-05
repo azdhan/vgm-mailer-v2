@@ -9,10 +9,8 @@ KEYWORDS = [
     "food brands Canada",
     "clinics Canada",
     "wellness brands Canada",
-    "retail chains Canada",
     "local Canadian businesses",
     "medical school admissions",
-    "med school debt",
     "physician burnout",
     "residency match",
     "pre-med",
@@ -27,5 +25,7 @@ KEYWORDS = [
     "bar exam",
     "student debt law",
     "legal careers",
+    "personality development",
+    "legal school consulations"
     "mental health in law school",
 ]
